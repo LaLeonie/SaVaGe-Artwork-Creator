@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
     "db_init": "node database/db_init.js",
     "test": "NODE_ENV=test tape tests/*.js | tap-spec"
   },
@@ -25,7 +26,10 @@
     "tape": "^4.11.0"
   },
   "dependencies": {
+    "bcrypt": "^3.0.6",
+    "cookie": "^0.4.0",
     "env2": "^2.2.2",
+    "jsonwebtoken": "^8.5.1",
     "pg": "^7.12.0"
   }
 }

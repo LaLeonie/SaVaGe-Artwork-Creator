@@ -1,0 +1,126 @@
+/*----------------------------LAYOUT/GRID-------------------------*/
+main {
+  display: grid;
+  grid-template-areas:
+    "headline headline"
+    "gallery gallery";
+}
+
+h1 {
+  grid-area: headline;
+}
+
+.svgs-gallery {
+  grid-area: gallery;
+}
+
+/*----------------------------LOGIN SECTION -------------------------*/
+
+header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.loginForm {
+  display: flex;
+  justify-content: space-around;
+}
+
+.loginForm > * {
+  margin: 0 1%;
+  align-self: center;
+}
+
+.loginSubmit {
+  padding: 5px;
+}
+
+.loginSubmit:hover {
+  border-color: white;
+}
+
+/*----------------------------gallery section -------------------------*/
+
+svg {
+  width: 200px;
+  padding: 1rem;
+  border: 1px solid black;
+}
+
+pre {
+  max-width: 200px;
+  white-space: pre-line;
+}
+.svg-wrapper {
+  margin: 1rem;
+}
+.svgs-gallery {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/*----------------------------mobile view -------------------------*/
+
+@media screen and (max-width: 768px) {
+  header {
+    display: block;
+    padding: 0;
+    height: 22vh;
+    padding-top: 1vh;
+  }
+
+  main {
+    display: grid;
+    grid-template-areas:
+      "headline"
+      "gallery";
+  }
+  /*----------------------------Login area -------------------------*/
+
+  .loginForm {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .loginForm > * {
+    margin: 0 1%;
+    align-self: center;
+  }
+
+  .username,
+  .password,
+  .loginSubmit {
+    margin: 0.5% 0;
+    width: 80% !important;
+    align-self: center;
+  }
+
+  .loginSubmit {
+    padding: 2px;
+  }
+
+  .loginSubmit:hover {
+    border-color: white;
+  }
+  /*----------------------------gallery -------------------------*/
+
+  h1 {
+    grid-area: headline;
+    font-size: ;
+  }
+
+  .svgs-gallery {
+    grid-area: gallery;
+  }
+
+  .SVGbutton,
+  .SHAPEbutton {
+    align-self: flex-end;
+    margin: 2% 0;
+  }
+
+  .loginSubmit {
+    width: 10px;
+    padding: 5px;
+  }
+}

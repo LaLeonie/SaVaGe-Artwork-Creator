@@ -2,9 +2,10 @@ const fs = require("fs");
 const path = require("path");
 const queries = require("./queries");
 const querystring = require("querystring");
+const jwt = require("jsonwebtoken");
 
 module.exports = {
-  staticAssets(req, res) {
+  staticAssets(req, res, username) {
     const extension = path.extname(req.url).substring(1);
     const extensionType = {
       html: "text/html",
@@ -13,13 +14,13 @@ module.exports = {
       ico: "image/x-icon"
     };
     const filePath = path.join(__dirname, "..", req.url);
-    fs.readFile(filePath, (error, file) => {
+    fs.readFile(filePath, "utf-8", (error, file) => {
       if (error) {
         res.writeHead(500, { "content-type": "text/html" });
         res.end(error.message);
       } else {
         res.writeHead(200, { "content-type": extensionType[extension] });
-        res.end(file);
+        res.end(file.replace("{{ username }}", username));
       }
     });
   },
@@ -30,13 +31,33 @@ module.exports = {
       data += chunk;
     });
     req.on("end", () => {
-      console.log(data);
-      let dataObject = querystring.parse(data);
-      console.log(dataObject);
+      let {username, password} = querystring.parse(data);
+      let formattedUsername = username.toUpperCase();
+      queries.getUserQuery( formattedUsername, password, (err, userDetails) => {
+          if(err) {
+            res.writeHead(301, { location: "/" });
+            res.end();
+          } else {
+            const jwtToken = jwt.sign(userDetails, process.env.SECRET);
+            res.writeHead(301, {
+              location: "/",
+              "Set-Cookie": "token=" + jwtToken
+            });
+            res.end();
+          }
+        });
     });
   },
 
-  postSVG(req, res) {
+  logout(req, res) {
+    res.writeHead(301, {
+      location: "/",
+      "Set-Cookie": "token=false; Max-Age=0"
+    });
+    res.end();
+  },
+
+  postSVG(req, res, id) {
     let data = "";
     req.on("data", chunk => {
       data += chunk;
@@ -46,10 +67,14 @@ module.exports = {
       queries.postSVGquery(
         dataObject.name,
         dataObject.props,
+        id,
         (error, result) => {
-          if (error) console.log(error);
           res.writeHead(200, { "content-type": "text/html" });
-          res.end("{}");
+          if (error) {
+            res.end(JSON.stringify({error}));
+          } else {
+            res.end("{}");
+          }
         }
       );
     });
@@ -60,8 +85,9 @@ module.exports = {
       res.end(JSON.stringify(result.rows));
     });
   },
-  getSVGs(req, res) {
-    queries.getSVGsQuery(result => {
+
+  getSVGs(req, res, userId) {
+    queries.getSVGsQuery(userId, (result) => {
       res.writeHead(200, { "content-type": "application/json" });
       res.end(JSON.stringify(result.rows));
     });
@@ -79,9 +105,12 @@ module.exports = {
         data2Obj.props,
         data2Obj.type,
         (error, result) => {
-          if (error) console.log(error);
           res.writeHead(200, { "content-type": "text/html" });
-          res.end("{}");
+          if (error) {
+           res.end(JSON.stringify({error}));
+          } else {
+            res.end("{}");
+          }
         }
       );
     });

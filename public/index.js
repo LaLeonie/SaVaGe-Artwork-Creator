@@ -10,36 +10,50 @@ const backendCall = (url, method, data, cb) => {
   xml.send(data);
 };
 
+const isLoggedIn =  document.querySelector('.logoutSubmit')? true: false;
 const SVGbutton = document.querySelector(".SVGbutton");
 const SVGname = document.querySelector(".SVGname");
 const SVGprops = document.querySelector(".SVGprops");
 
-SVGbutton.addEventListener("click", () => {
-  const name = SVGname.value;
-  const props = "{" + SVGprops.value + "}";
-  const SVGobject = { name, props };
-  backendCall("/postSVG", "POST", JSON.stringify(SVGobject), res => {
-    draw();
-    SVGname.value = "";
-    SVGprops.value = "";
-  });
-});
+if (isLoggedIn){
 
+  SVGbutton.addEventListener("click", () => {
+    const name = SVGname.value;
+    const props = "{" + SVGprops.value + "}";
+    const SVGobject = { name, props };
+    backendCall("/postSVG", "POST", JSON.stringify(SVGobject), res => {
+      if (res.error){
+        alert("SVG name has to be a unique.");
+      }
+      draw();
+      SVGname.value = "";
+      SVGprops.value = "";
+    });
+  });
+  
+}
 const SHAPEbutton = document.querySelector(".SHAPEbutton");
 const SHAPEname = document.querySelector(".SHAPEname");
 const SHAPEprops = document.querySelector(".SHAPEprops");
 const SHAPEtype = document.querySelector(".SHAPEtype");
 
-SHAPEbutton.addEventListener("click", () => {
-  const name = SHAPEname.value;
-  const type = SHAPEtype.value;
-  const props = "{" + SHAPEprops.value + "}";
-  const SHAPEobj = { name, props, type };
-  backendCall("/postSHAPE", "POST", JSON.stringify(SHAPEobj), res => {
-    draw();
-    SHAPEname.value = "";
+if (isLoggedIn){
+
+  SHAPEbutton.addEventListener("click", () => {
+    const name = SHAPEname.value;
+    const type = SHAPEtype.value;
+    const props = "{" + SHAPEprops.value + "}";
+    const SHAPEobj = { name, props, type };
+    backendCall("/postSHAPE", "POST", JSON.stringify(SHAPEobj), res => {
+      if (res.error){
+        alert("Shape name has to be a unique.");
+      }
+      draw();
+      SHAPEname.value = "";
+    });
   });
-});
+
+ 
 
 document.querySelector(".btn-combine").addEventListener("click", () => {
   const svg_id = document.querySelector(".list-of-svgs").value;
@@ -50,7 +64,7 @@ document.querySelector(".btn-combine").addEventListener("click", () => {
     draw();
   });
 });
-
+}
 const generateSVG = (tag, props) => {
   const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
   Object.entries(props).forEach(([key, value]) => {
@@ -89,21 +103,25 @@ const drawSVGS = () => {
 
     // get just the svgs form the data [ ["picasso","{pros}"],["banksy","{vuewport:232}"]]
     svgs = svgs.map(svgName => {
-      return [svgName, res.find(r => r.svg_name === svgName).svg_props];
+      const svgObj=res.find(r => r.svg_name === svgName)
+      return [svgName, svgObj.svg_props, svgObj.username];
     });
 
     const svgObjects = {};
     // generate all SVGs
-    svgs.forEach(([name, props]) => {
+    svgs.forEach(([name, props, username]) => {
       const svg = generateSVG("svg", JSON.parse(props));
       svgObjects[name] = svg;
       const wrapper = document.createElement("div");
       wrapper.classList.add("svg-wrapper");
       const title = document.createElement("h3");
       title.textContent = name;
+      const author = document.createElement('h4');
+      author.textContent = username
       const code = document.createElement("pre");
       code.classList.add("svg-code");
       wrapper.appendChild(title);
+      wrapper.appendChild(author);
       wrapper.appendChild(svg);
       wrapper.appendChild(code);
       parent.appendChild(wrapper);
@@ -140,14 +158,19 @@ const populateDefaultValue = () => {
   document.querySelector(".SHAPEprops").value = defaultValues[type];
 };
 
-document
-  .querySelector(".SHAPEtype")
-  .addEventListener("change", populateDefaultValue);
+const SHAPEt=document
+  .querySelector(".SHAPEtype");
+  if (SHAPEt){
 
+    SHAPEt.addEventListener("change", populateDefaultValue);
+  }
+    
 const draw = () => {
-  populateDropdown("/getSVGs", ".list-of-svgs");
-  populateDropdown("/getSHAPEs", ".list-of-shapes");
-  populateDefaultValue();
+  if (isLoggedIn){
+    populateDropdown("/getSVGs", ".list-of-svgs");
+    populateDropdown("/getSHAPEs", ".list-of-shapes");
+    populateDefaultValue();
+  }
   drawSVGS();
 };
 
